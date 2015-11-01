@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1440970643 source:/home/antonio/Dropbox/PPI/1Sockets/main.cpp
+	<stdio.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<netinet/in.h>
+	<netdb.h>
+	<cstdlib>
+	<cstring>
+	<unistd.h>
+
