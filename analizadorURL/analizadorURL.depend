@@ -1,0 +1,12 @@
+# depslib dependency file v1.0
+1446077788 source:/home/antonio/Dropbox/PPI/analizadorURL/main.cpp
+	<iostream>
+	<string>
+	<cstdlib>
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<string.h>
+	<sys/socket.h>
+	<netdb.h>
+
