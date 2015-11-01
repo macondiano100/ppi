@@ -1,0 +1,17 @@
+# depslib dependency file v1.0
+1444517571 source:/home/antonio/Dropbox/PPI/5Polling/main.cpp
+	<stdio.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/time.h>
+	<sys/socket.h>
+	<fcntl.h>
+	<netinet/in.h>
+	<netdb.h>
+	<cstdlib>
+	<cstring>
+	<unistd.h>
+	<iostream>
+	<arpa/inet.h>
+	<poll.h>
+
