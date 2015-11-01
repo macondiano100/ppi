@@ -1,0 +1,15 @@
+# depslib dependency file v1.0
+1443324903 source:/home/antonio/Dropbox/PPI/03ServidorTCP/main.cpp
+	<stdio.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<fcntl.h>
+	<netinet/in.h>
+	<netdb.h>
+	<cstdlib>
+	<cstring>
+	<unistd.h>
+	<iostream>
+	<arpa/inet.h>
+
