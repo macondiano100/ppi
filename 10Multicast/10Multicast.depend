@@ -1,0 +1,32 @@
+# depslib dependency file v1.0
+1445646990 source:/home/antonio/Dropbox/PPI/10Multicast/main.cpp
+	<net/if.h>
+	<unistd.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	<sys/socket.h>
+	<netinet/in.h>
+	<sys/un.h>
+	<netinet/tcp.h>
+	<arpa/inet.h>
+	<netdb.h>
+
+1445647798 source:/home/antonio/Dropbox/PPI/10Multicast/cliente.cpp
+	<net/if.h>
+	<unistd.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	<sys/socket.h>
+	<netinet/in.h>
+	<sys/un.h>
+	<netinet/tcp.h>
+	<arpa/inet.h>
+	<netdb.h>
+	"util.h"
+
+1445647802 /home/antonio/Dropbox/PPI/10Multicast/util.h
+
