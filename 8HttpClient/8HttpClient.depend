@@ -1,0 +1,35 @@
+# depslib dependency file v1.0
+1446347471 source:/home/antonio/Dropbox/PPI/8HttpClient/main.cpp
+	<iostream>
+	<unordered_map>
+	<sstream>
+	<vector>
+	<algorithm>
+	<stdio.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/time.h>
+	<sys/socket.h>
+	<fcntl.h>
+	<netinet/in.h>
+	<netdb.h>
+	<cstdlib>
+	<cstring>
+	<cctype>
+	<unistd.h>
+	<iostream>
+	<arpa/inet.h>
+	<fstream>
+	"urlAnalizer.h"
+
+1446252927 /home/antonio/Dropbox/PPI/8HttpClient/urlAnalizer.h
+	<iostream>
+	<string>
+	<cstdlib>
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<string.h>
+	<sys/socket.h>
+	<netdb.h>
+
