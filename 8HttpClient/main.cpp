@@ -18,10 +18,12 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <fstream>
+#include <poll.h>
 #include "urlAnalizer.h"
 using namespace std;
 using SOCKET=int;
 constexpr int BUFFSIZE=5;
+constexpr char* NOMBRE_ARCHIVO="result.txt";
 class HTTPHeader
 {
 private:
@@ -56,7 +58,7 @@ public:
     {
         vector<string> fieldNames;
         transform(fields.cbegin(),fields.cend(),fieldNames.begin(),
-        [](pair<string,string> t)->string{return t.first;});
+                  [](pair<string,string> t)->string {return t.first;});
         return fieldNames;
     }
     string toSendableString()
@@ -92,64 +94,97 @@ bool getResponse(SOCKET sock,HTTPHeader &responseHeader,ofstream &archivo)
     string aux;
     size_t pos=0;
     int nLeidos;
-    bool readingHeader=true;
-    int i;
+    bool readingHeader=true,okStatus,continuarLeyendo=true;
+    int i,pollRes;
     string fileName;
-    bool okStatus;
-    archivo.open("result",ios::binary|ios::out);
-    do
+    pollfd revisar {};
+    revisar.fd=sock;
+    revisar.events=POLLIN;
+    archivo.open(NOMBRE_ARCHIVO,ios::binary|ios::out);
+    while(continuarLeyendo)
     {
-        nLeidos=read(sock,responseBuff,BUFFSIZE);
-        if(nLeidos<0)salirError("Error de lectura");
-        responseBuff[nLeidos]=0;
-        if(readingHeader)
+        pollRes=poll(&revisar,1,40);
+        if(pollRes<0)
         {
-            aux.append(responseBuff);
-            pos=aux.find("\r\n\r\n",pos);
-            if(pos!=string::npos)
+            perror("Error de Polling: ");
+        }
+        else if(pollRes>0)
+        {
+
+            if(revisar.revents&(POLLERR|POLLHUP))
             {
-                stringToHeader(aux.substr(0,pos+4),responseHeader);
-                if(getResponseType(responseHeader)=="OK")
+                perror("Error");
+            }
+            else if(revisar.revents&POLLIN)
+            {
+                nLeidos=read(sock,responseBuff,BUFFSIZE);
+                continuarLeyendo=nLeidos;
+                responseBuff[nLeidos]='\0';
+                if(readingHeader)
                 {
-                    archivo<<aux.substr(pos+4,aux.size());
-                    okStatus=true;
-                    readingHeader=false;
+                    aux.append(responseBuff);
+                    pos=aux.find("\r\n\r\n",pos);
+                    if(pos!=string::npos)
+                    {
+                        stringToHeader(aux.substr(0,pos+4),responseHeader);
+                        if(getResponseType(responseHeader)=="OK")
+                        {
+                            archivo<<aux.substr(pos+4,aux.size());
+                            okStatus=true;
+                            readingHeader=false;
+                        }
+                        else
+                        {
+                            okStatus=false;
+                            break;
+                        }
+                    }
+                    pos=aux.size()-4;
                 }
                 else
                 {
-                    okStatus=false;
-                    break;
+                    for(i=0; i<nLeidos; i++) archivo<<responseBuff[i];
                 }
             }
-            pos=aux.size()-4;
         }
-        else
-        {
-            for(i=0;i<nLeidos;i++) archivo<<responseBuff[i];
-        }
-    }while(nLeidos!=0);
+    }
     return okStatus;
 }
-int main()
+int main(int args,char* argv[])
 {
     HTTPHeader requestHeader;
     URLInfo urlInfo;
-    getURLInfo(R"(http://www.arduinna.com.mx/pdf/gdl_es.pdf)",urlInfo);
+    string direccion;
+    if(args==2) direccion=argv[1];
+    else
+    {
+        cout<<"Deme la URL"<<endl;
+        cin>>direccion;
+    }
+    getURLInfo(direccion.c_str(),urlInfo);
     createRequestHeader(urlInfo,requestHeader);
     SOCKET sock=createClientSocket(urlInfo.domain.c_str());
     string message=requestHeader.toSendableString().c_str();
-    if(sock<0) salirError("nana");
+    if(sock<0) salirError("Error de connecion");
     if(write(sock,message.c_str(),message.size())<0)salirError("Error al enviar el mensaje");
     HTTPHeader responseHeader;
     ofstream archivo;
-    if(getResponse(sock,responseHeader,archivo)) cout<<"Error"<<endl;
-    cout<<"----Cabecera de la respuesta-----"<<endl;
-    cout<<responseHeader.toString();
+    if(getResponse(sock,responseHeader,archivo))
+    {
+        cout<<"Mensaje recibido correctamente"<<endl;
+        cout<<"Guardado en el archivo: "<<NOMBRE_ARCHIVO<<endl;
+    }
+    else{
+        cout<<"Error de http"<<endl;
+    }
+        cout<<"----Cabecera de la respuesta-----"<<endl;
+        cout<<responseHeader.toString();
     return 0;
 }
 
 
-void stringToHeader(string s,HTTPHeader &h){
+void stringToHeader(string s,HTTPHeader &h)
+{
     string line;
     size_t pos1,pos2,aux;
     pos1=pos2=0;
@@ -187,10 +222,10 @@ int createClientSocket(const char * const nombreHost,const char* const port)
     hints.ai_socktype = SOCK_STREAM;
     status=getaddrinfo(nombreHost, port, &hints,&addrList);
     if (status<0) salirError("getaddrinfo error:");
-    for(addrPuntero=addrList;addrPuntero!=nullptr;addrPuntero=addrPuntero->ai_next)
+    for(addrPuntero=addrList; addrPuntero!=nullptr; addrPuntero=addrPuntero->ai_next)
     {
         getnameinfo((sockaddr*)(addrPuntero->ai_addr),addrPuntero->ai_addrlen,
-            resHostName,sizeof resHostName,nullptr,0,NI_NUMERICHOST);
+                    resHostName,sizeof resHostName,nullptr,0,NI_NUMERICHOST);
         sockDes=socket(addrPuntero->ai_family,SOCK_STREAM,addrPuntero->ai_protocol);
         if(sockDes>=0)
         {
@@ -207,8 +242,8 @@ void salirError(char const* error)
 }
 void createRequestHeader(URLInfo info,HTTPHeader &h)
 {
-        h.setStartLine("GET",info.path,"1.1");
-        h.setField("Host",info.domain+":80");
-        h.setField("Accept-Encoding","None");
-        h.setField("Connection","close");
+    h.setStartLine("GET",info.path,"1.1");
+    h.setField("Host",info.domain+":80");
+    h.setField("Accept-Encoding","None");
+    h.setField("Connection","close");
 }
