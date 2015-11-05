@@ -33,7 +33,7 @@
 	<sys/socket.h>
 	<netdb.h>
 
-1446681892 source:/home/antonio/Dropbox/PPI/ppi.git/8HttpClient/main.cpp
+1446682430 source:/home/antonio/Dropbox/PPI/ppi.git/8HttpClient/main.cpp
 	<iostream>
 	<unordered_map>
 	<sstream>
@@ -56,6 +56,7 @@
 	<fstream>
 	<poll.h>
 	"urlAnalizer.h"
+	"HTTPHeader.h"
 
 1446252927 /home/antonio/Dropbox/PPI/ppi.git/8HttpClient/urlAnalizer.h
 	<iostream>
@@ -67,4 +68,18 @@
 	<string.h>
 	<sys/socket.h>
 	<netdb.h>
+
+1446682347 /home/antonio/Dropbox/PPI/ppi.git/8HttpClient/include/HTTPHeader.h
+	<iostream>
+	<unordered_map>
+	<vector>
+	<algorithm>
+	<sstream>
+
+1446682347 /home/antonio/Dropbox/PPI/ppi.git/8HttpClient/HTTPHeader.h
+	<iostream>
+	<unordered_map>
+	<vector>
+	<algorithm>
+	<sstream>
 

@@ -20,136 +20,17 @@
 #include <fstream>
 #include <poll.h>
 #include "urlAnalizer.h"
+#include "HTTPHeader.h"
 using namespace std;
 using SOCKET=int;
 constexpr int BUFFSIZE=1055;
 constexpr char* NOMBRE_ARCHIVO="result.txt";
-class HTTPHeader
-{
-private:
-    string startLine;
-    unordered_map<string,string> fields;
-public:
-    void setStartLine(string line)
-    {
-        startLine=line;
-    }
-    void setStartLine(string method,string uri,string httpVersion)
-    {
-        startLine=method+" "+uri+" "+R"(HTTP/)"+httpVersion;
-    }
-    bool fieldExists(string field)
-    {
-        return fields.count(field);
-    }
-    string getField(string field)
-    {
-        return fields.at(field);
-    }
-    string getStartLine()
-    {
-        return startLine;
-    }
-    void setField(string field,string value)
-    {
-        fields[field]=value;
-    }
-    vector<string> getFieldNames()
-    {
-        vector<string> fieldNames;
-        transform(fields.cbegin(),fields.cend(),fieldNames.begin(),
-                  [](pair<string,string> t)->string {return t.first;});
-        return fieldNames;
-    }
-    string toSendableString()
-    {
-        stringstream s;
-        s<<startLine<<"\r\n";
-        for(auto p:fields)
-        {
-            s<<p.first<<":"<<p.second<<"\r\n";
-        }
-        s<<"\r\n";
-        return s.str();
-    }
-    string toString()
-    {
-        stringstream s;
-        s<<startLine<<endl;
-        for(auto p:fields)
-        {
-            s<<p.first<<":"<<p.second<<endl;
-        }
-        return s.str();
-    }
-};
 string getResponseType(HTTPHeader h);
 void salirError(char const* error);
 int createClientSocket(const char * const nombreHost,const char* const port="80");
 void createRequestHeader(URLInfo info,HTTPHeader &h);
 void stringToHeader(string s,HTTPHeader &h);
-bool getResponse(SOCKET sock,HTTPHeader &responseHeader,ofstream &archivo)
-{
-    char responseBuff[BUFFSIZE+1];
-    string aux;
-    size_t pos=0;
-    int nLeidos;
-    bool readingHeader=true,okStatus,continuarLeyendo=true;
-    int i,pollRes;
-    string fileName;
-    pollfd revisar {};
-    revisar.fd=sock;
-    revisar.events=POLLIN;
-    archivo.open(NOMBRE_ARCHIVO,ios::binary|ios::out);
-    while(continuarLeyendo)
-    {
-        pollRes=poll(&revisar,1,40);
-        if(pollRes<0)
-        {
-            perror("Error de Polling: ");
-        }
-        else if(pollRes>0)
-        {
-
-            if(revisar.revents&(POLLERR|POLLHUP))
-            {
-                perror("Error");
-            }
-            else if(revisar.revents&POLLIN)
-            {
-                nLeidos=read(sock,responseBuff,BUFFSIZE);
-                continuarLeyendo=nLeidos;
-                responseBuff[nLeidos]='\0';
-                if(readingHeader)
-                {
-                    aux.append(responseBuff);
-                    pos=aux.find("\r\n\r\n",pos);
-                    if(pos!=string::npos)
-                    {
-                        stringToHeader(aux.substr(0,pos+4),responseHeader);
-                        if(getResponseType(responseHeader)=="OK")
-                        {
-                            archivo<<aux.substr(pos+4,aux.size());
-                            okStatus=true;
-                            readingHeader=false;
-                        }
-                        else
-                        {
-                            okStatus=false;
-                            break;
-                        }
-                    }
-                    pos=aux.size()-4;
-                }
-                else
-                {
-                    for(i=0; i<nLeidos; i++) archivo<<responseBuff[i];
-                }
-            }
-        }
-    }
-    return okStatus;
-}
+bool getResponse(SOCKET sock,HTTPHeader &responseHeader,ofstream &archivo);
 int main(int args,char* argv[])
 {
     HTTPHeader requestHeader;
@@ -246,4 +127,66 @@ void createRequestHeader(URLInfo info,HTTPHeader &h)
     h.setField("Host",info.domain+":80");
     h.setField("Accept-Encoding","None");
     h.setField("Connection","close");
+}
+bool getResponse(SOCKET sock,HTTPHeader &responseHeader,ofstream &archivo)
+{
+    char responseBuff[BUFFSIZE+1];
+    string aux;
+    size_t pos=0;
+    int nLeidos;
+    bool readingHeader=true,okStatus,continuarLeyendo=true;
+    int i,pollRes;
+    string fileName;
+    pollfd revisar {};
+    revisar.fd=sock;
+    revisar.events=POLLIN;
+    archivo.open(NOMBRE_ARCHIVO,ios::binary|ios::out);
+    while(continuarLeyendo)
+    {
+        pollRes=poll(&revisar,1,40);
+        if(pollRes<0)
+        {
+            perror("Error de Polling: ");
+        }
+        else if(pollRes>0)
+        {
+
+            if(revisar.revents&(POLLERR|POLLHUP))
+            {
+                perror("Error");
+            }
+            else if(revisar.revents&POLLIN)
+            {
+                nLeidos=read(sock,responseBuff,BUFFSIZE);
+                continuarLeyendo=nLeidos;
+                responseBuff[nLeidos]='\0';
+                if(readingHeader)
+                {
+                    aux.append(responseBuff);
+                    pos=aux.find("\r\n\r\n",pos);
+                    if(pos!=string::npos)
+                    {
+                        stringToHeader(aux.substr(0,pos+4),responseHeader);
+                        if(getResponseType(responseHeader)=="OK")
+                        {
+                            archivo<<aux.substr(pos+4,aux.size());
+                            okStatus=true;
+                            readingHeader=false;
+                        }
+                        else
+                        {
+                            okStatus=false;
+                            break;
+                        }
+                    }
+                    pos=aux.size()-4;
+                }
+                else
+                {
+                    for(i=0; i<nLeidos; i++) archivo<<responseBuff[i];
+                }
+            }
+        }
+    }
+    return okStatus;
 }
