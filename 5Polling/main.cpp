@@ -89,9 +89,7 @@ int main()
             {
                 bytesLeidos=read(sockDes,buffer,TAMANIO_BUFFER);
                 continuarLeyendo=bytesLeidos;
-                if(bytesLeidos>0)
-                {
-                } buffer[bytesLeidos]='\0';
+                if(bytesLeidos>0) buffer[bytesLeidos]='\0';
                 cout<<buffer;
             }
         }

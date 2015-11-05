@@ -12,7 +12,8 @@ int main()
 {
     constexpr int TAMANIO_BUFFER=1;
     int sockDes;
-    char *cadenaIP="208.94.246.184";
+    //char *cadenaIP="208.94.246.184";
+    char *cadenaIP="127.0.0.1";
     short puerto=12345;
     int errorCode;
     sockaddr_in dir_servidor;
@@ -37,18 +38,21 @@ int main()
     if(errorCode<0)
     {
         perror("Error de conexion");
+        exit(1);
     }
 
+    printf("waitin\n");
     char buffer[TAMANIO_BUFFER+1];
     int bytesLeidos;
     while((bytesLeidos=read(sockDes,buffer,TAMANIO_BUFFER))>0)
     {
         buffer[bytesLeidos]='\0';
-        printf("%s",buffer);
+        printf("%s%d",buffer,bytesLeidos);
     }
     if(close(sockDes)<0)
     {
         perror("Error al cerrar el socket");
+        exit(1);
     }
     return 0;
 }

@@ -22,7 +22,7 @@
 #include "urlAnalizer.h"
 using namespace std;
 using SOCKET=int;
-constexpr int BUFFSIZE=5;
+constexpr int BUFFSIZE=1055;
 constexpr char* NOMBRE_ARCHIVO="result.txt";
 class HTTPHeader
 {
