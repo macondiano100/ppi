@@ -1,3 +1,8 @@
+/**
+	Vidal Sánchez José Antonio
+	INCO
+	213496757
+**/
 #include <iostream>
 #include <unordered_map>
 #include <sstream>
